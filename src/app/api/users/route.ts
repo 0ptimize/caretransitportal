@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import type { UserRole } from "@/types/next-auth"
 
+const roleMap: Record<string, string> = {
+  ADMIN: "ADMIN",
+  DISTRICT: "DISTRICT_USER",
+  EMPLOYEE: "EMPLOYEE_USER"
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession()
@@ -27,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     // Validate role
-    if (!["ADMIN", "DISTRICT", "EMPLOYEE"].includes(role)) {
+    if (!roleMap[role]) {
       return NextResponse.json(
         { message: "Invalid role" },
         { status: 400 }
@@ -56,7 +62,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         firstName,
         lastName,
-        role: role as UserRole,
+        role: roleMap[role],
         schoolDistrict
       }
     })
