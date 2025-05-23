@@ -12,12 +12,12 @@ export default withAuth(
     }
 
     // District routes
-    if (path.startsWith("/district") && token?.role !== "DISTRICT_USER") {
+    if (path.startsWith("/district") && token?.role !== "DISTRICT") {
       return NextResponse.redirect(new URL("/", req.url))
     }
 
     // Employee routes
-    if (path.startsWith("/employee") && token?.role !== "EMPLOYEE_USER") {
+    if (path.startsWith("/employee") && token?.role !== "EMPLOYEE") {
       return NextResponse.redirect(new URL("/", req.url))
     }
 
