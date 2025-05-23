@@ -56,7 +56,7 @@ const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
   pages: {
-    signIn: "/login"
+    signIn: "/auth/signin"
   },
   callbacks: {
     async jwt({ token, user }) {

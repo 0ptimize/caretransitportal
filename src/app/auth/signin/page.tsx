@@ -7,30 +7,33 @@ import { useRouter } from "next/navigation"
 export default function SignIn() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
     const formData = new FormData(e.currentTarget)
-    const username = formData.get("username") as string
+    const email = formData.get("email") as string
     const password = formData.get("password") as string
 
     try {
       const result = await signIn("credentials", {
-        username,
+        email,
         password,
         redirect: false,
       })
 
       if (result?.error) {
+        setError("Invalid email or password")
         return
       }
 
       router.push("/")
       router.refresh()
-    } catch {
-      // Handle error
+    } catch (error) {
+      setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -45,18 +48,23 @@ export default function SignIn() {
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          )}
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="sr-only">
-                Username
+              <label htmlFor="email" className="sr-only">
+                Email
               </label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
+                placeholder="Email"
               />
             </div>
             <div>
