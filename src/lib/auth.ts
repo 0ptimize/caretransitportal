@@ -65,12 +65,20 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: "/signin"
+    signIn: "/auth/signin"
   }
 }
 
 function mapPrismaRoleToNextAuthRole(role: string): UserRole {
-  if (role === "DISTRICT_USER") return "DISTRICT"
-  if (role === "EMPLOYEE_USER") return "EMPLOYEE"
-  return "ADMIN"
+  switch (role) {
+    case "DISTRICT_USER":
+      return "DISTRICT"
+    case "EMPLOYEE_USER":
+      return "EMPLOYEE"
+    case "ADMIN":
+      return "ADMIN"
+    default:
+      console.warn(`Unknown role: ${role}, defaulting to EMPLOYEE`)
+      return "EMPLOYEE"
+  }
 } 

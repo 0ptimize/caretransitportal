@@ -8,17 +8,17 @@ export default withAuth(
 
     // Admin routes
     if (path.startsWith("/admin") && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", req.url))
+      return NextResponse.redirect(new URL("/auth/signin", req.url))
     }
 
     // District routes
     if (path.startsWith("/district") && token?.role !== "DISTRICT") {
-      return NextResponse.redirect(new URL("/", req.url))
+      return NextResponse.redirect(new URL("/auth/signin", req.url))
     }
 
     // Employee routes
     if (path.startsWith("/employee") && token?.role !== "EMPLOYEE") {
-      return NextResponse.redirect(new URL("/", req.url))
+      return NextResponse.redirect(new URL("/auth/signin", req.url))
     }
 
     return NextResponse.next()
@@ -26,6 +26,9 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token }) => !!token
+    },
+    pages: {
+      signIn: "/auth/signin"
     }
   }
 )

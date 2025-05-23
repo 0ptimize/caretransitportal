@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function SignIn() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -30,7 +31,25 @@ export default function SignIn() {
         return
       }
 
-      router.push("/")
+      // Get the callback URL from the search params or default to appropriate portal
+      const callbackUrl = searchParams.get("callbackUrl")
+      if (callbackUrl) {
+        router.push(callbackUrl)
+      } else {
+        // If no callback URL, redirect to appropriate portal based on role
+        const response = await fetch("/api/auth/session")
+        const session = await response.json()
+        
+        if (session?.user?.role === "ADMIN") {
+          router.push("/admin")
+        } else if (session?.user?.role === "DISTRICT") {
+          router.push("/district")
+        } else if (session?.user?.role === "EMPLOYEE") {
+          router.push("/employee")
+        } else {
+          router.push("/")
+        }
+      }
       router.refresh()
     } catch (error) {
       setError("An error occurred. Please try again.")
