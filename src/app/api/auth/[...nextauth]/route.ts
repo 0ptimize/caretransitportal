@@ -1,4 +1,3 @@
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import { NextAuthOptions } from "next-auth"
 import { prisma } from "@/lib/prisma"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -16,7 +15,6 @@ interface CustomUser {
 }
 
 const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
