@@ -2,13 +2,14 @@ import { NextAuthOptions } from "next-auth"
 import { prisma } from "@/lib/prisma"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
+import type { UserRole } from "@/types/next-auth"
 
 // Extend the User type to include role and schoolDistrict
 interface CustomUser {
   id: string;
   email: string;
   password: string;
-  role: string;
+  role: UserRole;
   schoolDistrict: string;
   firstName?: string;
   lastName?: string;
@@ -46,7 +47,12 @@ const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials")
         }
 
-        return user as CustomUser
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role as UserRole,
+          schoolDistrict: user.schoolDistrict
+        }
       }
     })
   ],
@@ -61,12 +67,11 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const customUser = user as CustomUser
         return {
           ...token,
-          id: customUser.id,
-          role: customUser.role,
-          schoolDistrict: customUser.schoolDistrict
+          id: user.id,
+          role: user.role,
+          schoolDistrict: user.schoolDistrict
         }
       }
       return token
