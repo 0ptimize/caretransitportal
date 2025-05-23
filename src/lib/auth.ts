@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
-          role: user.role,
+          role: mapPrismaRoleToNextAuthRole(user.role),
           schoolDistrict: user.schoolDistrict || ""
         }
       }
@@ -67,4 +67,10 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/signin"
   }
+}
+
+function mapPrismaRoleToNextAuthRole(role: string): UserRole {
+  if (role === "DISTRICT_USER") return "DISTRICT"
+  if (role === "EMPLOYEE_USER") return "EMPLOYEE"
+  return "ADMIN"
 } 
