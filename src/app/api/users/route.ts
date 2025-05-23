@@ -28,10 +28,10 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { email, password, firstName, lastName, role: roleRaw, schoolDistrict } = data as { email: string; password: string; firstName: string; lastName: string; role: string; schoolDistrict: string }
+    const { email, password, firstName, lastName, username, role: roleRaw, schoolDistrict } = data as { email: string; password: string; firstName: string; lastName: string; username: string; role: string; schoolDistrict: string }
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !roleRaw || !schoolDistrict) {
+    if (!email || !password || !firstName || !lastName || !username || !roleRaw || !schoolDistrict) {
       return NextResponse.json(
         { message: "All fields are required" },
         { status: 400 }
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         firstName,
         lastName,
+        username,
         role: roleMap[prismaRole],
         schoolDistrict
       }

@@ -23,6 +23,7 @@ export function UserCreationForm({ onSuccess, onCancel }: UserCreationFormProps)
       password: formData.get("password") as string,
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
+      username: formData.get("username") as string,
       role: formData.get("role") as UserRole,
       schoolDistrict: formData.get("schoolDistrict") as string,
     }
@@ -108,6 +109,19 @@ export function UserCreationForm({ onSuccess, onCancel }: UserCreationFormProps)
           id="password"
           required
           minLength={8}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Username
+        </label>
+        <input
+          type="text"
+          name="username"
+          id="username"
+          required
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600"
         />
       </div>
