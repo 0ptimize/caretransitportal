@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import type { UserRole } from "@/types/next-auth"
 
 export default function EmployeeLayout({
   children,
