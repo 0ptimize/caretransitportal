@@ -1,18 +1,32 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
 
 const SAMSARA_API_TOKEN = process.env.SAMSARA_API_TOKEN
 const SAMSARA_API_URL = "https://api.samsara.com"
 
-async function callSamsaraApi(endpoint: string, method = "GET", payload = null) {
+// Updated Address type to include tags
+interface Address {
+  id: string;
+  name: string;
+  formattedAddress: string;
+  notes?: string;
+  tagIds: string[];
+  tags: { name: string }[];
+}
+
+// Update callSamsaraApi to accept payload as object
+async function callSamsaraApi(
+  endpoint: string,
+  method: string = "GET",
+  payload?: object
+): Promise<Address | Address[]> {
   const response = await fetch(`${SAMSARA_API_URL}${endpoint}`, {
     method,
     headers: {
       "Authorization": `Bearer ${SAMSARA_API_TOKEN}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     },
-    ...(payload && { body: JSON.stringify(payload) }),
+    body: payload ? JSON.stringify(payload) : undefined
   })
 
   if (!response.ok) {
@@ -24,27 +38,21 @@ async function callSamsaraApi(endpoint: string, method = "GET", payload = null) 
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    
+    const session = await getServerSession()
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-
     const { searchParams } = new URL(request.url)
     const district = searchParams.get("district")
-
     if (!district) {
       return NextResponse.json({ error: "District parameter is required" }, { status: 400 })
     }
-
     // Get addresses for the district
-    const addresses = await callSamsaraApi("/addresses")
-    
+    const addresses = await callSamsaraApi("/addresses") as Address[]
     // Filter addresses by district tag
-    const districtAddresses = addresses.data.filter((address: any) => 
-      address.tags.some((tag: any) => tag.name === district)
+    const districtAddresses = addresses.filter((address: Address) =>
+      address.tags.some((tag) => tag.name === district)
     )
-
     return NextResponse.json({ data: districtAddresses })
   } catch (error) {
     console.error("Samsara API error:", error)
@@ -57,30 +65,25 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    
+    const session = await getServerSession()
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-
-    const body = await request.json()
-    const { name, address, district, notes } = body
-
-    if (!name || !address || !district) {
+    const data = await request.json() as { name: string; formattedAddress: string; notes?: string; tagIds: string[] }
+    const { name, formattedAddress, notes, tagIds } = data
+    if (!name || !formattedAddress || !tagIds || tagIds.length === 0) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       )
     }
-
     // Create new address in Samsara
     const response = await callSamsaraApi("/addresses", "POST", {
       name,
-      formattedAddress: address,
+      formattedAddress,
       notes,
-      tagIds: [district], // Assuming district is the tag ID
-    })
-
+      tagIds
+    }) as Address
     return NextResponse.json(response)
   } catch (error) {
     console.error("Samsara API error:", error)

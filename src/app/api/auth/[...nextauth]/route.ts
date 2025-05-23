@@ -1,29 +1,37 @@
-import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
+import { NextAuthOptions } from "next-auth"
+import { prisma } from "@/lib/prisma"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
-import NextAuth from "next-auth/next"
 
-const prisma = new PrismaClient()
+// Extend the User type to include role and schoolDistrict
+interface CustomUser {
+  id: string;
+  email: string;
+  password: string;
+  role: string;
+  schoolDistrict: string;
+  firstName?: string;
+  lastName?: string;
+}
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials")
         }
 
         const user = await prisma.user.findUnique({
           where: {
-            username: credentials.username
+            email: credentials.email
           }
         })
 
@@ -40,23 +48,27 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials")
         }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          role: user.role,
-          schoolDistrict: user.schoolDistrict
-        }
+        return user as CustomUser
       }
     })
   ],
+  session: {
+    strategy: "jwt"
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
+  pages: {
+    signIn: "/login"
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        const customUser = user as CustomUser
         return {
           ...token,
-          role: user.role,
-          schoolDistrict: user.schoolDistrict
+          id: customUser.id,
+          role: customUser.role,
+          schoolDistrict: customUser.schoolDistrict
         }
       }
       return token
@@ -66,21 +78,15 @@ export const authOptions: NextAuthOptions = {
         ...session,
         user: {
           ...session.user,
+          id: token.id,
           role: token.role,
           schoolDistrict: token.schoolDistrict
         }
       }
     }
-  },
-  pages: {
-    signIn: "/auth/signin",
-  },
-  session: {
-    strategy: "jwt"
-  },
-  secret: process.env.NEXTAUTH_SECRET
+  }
 }
 
+import NextAuth from "next-auth"
 const handler = NextAuth(authOptions)
-
 export { handler as GET, handler as POST } 

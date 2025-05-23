@@ -6,13 +6,11 @@ import { useRouter } from "next/navigation"
 
 export default function SignIn() {
   const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    setError(null)
 
     const formData = new FormData(e.currentTarget)
     const username = formData.get("username") as string
@@ -26,14 +24,13 @@ export default function SignIn() {
       })
 
       if (result?.error) {
-        setError("Invalid username or password")
         return
       }
 
       router.push("/")
       router.refresh()
-    } catch (error) {
-      setError("An error occurred. Please try again.")
+    } catch {
+      // Handle error
     } finally {
       setIsLoading(false)
     }
@@ -76,10 +73,6 @@ export default function SignIn() {
               />
             </div>
           </div>
-
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
 
           <div>
             <button

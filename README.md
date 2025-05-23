@@ -31,13 +31,15 @@ npm install
 ```
 
 3. Set up environment variables:
-Create a `.env` file in the root directory with the following variables:
+Create a `.env` file in the root directory with the following variables (replace with your actual values):
 ```
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/caretransitportal?schema=public"
-NEXTAUTH_SECRET="your-secret-key-here"
+DATABASE_URL="postgresql://username:password@localhost:5432/caretransitportal?schema=public"
+NEXTAUTH_SECRET="generate-a-secure-random-string"
 NEXTAUTH_URL="http://localhost:3000"
 SAMSARA_API_TOKEN="your-samsara-api-token"
 ```
+
+Note: Never commit your `.env` file to version control. Make sure it's listed in your `.gitignore` file.
 
 4. Set up the database:
 ```bash
