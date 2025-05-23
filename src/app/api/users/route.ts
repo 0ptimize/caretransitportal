@@ -2,12 +2,18 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import type { UserRole } from "@/types/next-auth"
+// import type { UserRole } from "@/types/next-auth" // no longer needed
 
-const roleMap: Record<string, string> = {
+const roleMap = {
   ADMIN: "ADMIN",
   DISTRICT: "DISTRICT_USER",
   EMPLOYEE: "EMPLOYEE_USER"
+} as const
+
+type PrismaUserRole = typeof roleMap[keyof typeof roleMap]
+
+function isValidRoleKey(key: string): key is keyof typeof roleMap {
+  return key in roleMap;
 }
 
 export async function POST(request: Request) {
@@ -22,23 +28,24 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { email, password, firstName, lastName, role, schoolDistrict } = data
+    const { email, password, firstName, lastName, role: roleRaw, schoolDistrict } = data as { email: string; password: string; firstName: string; lastName: string; role: string; schoolDistrict: string }
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !role || !schoolDistrict) {
+    if (!email || !password || !firstName || !lastName || !roleRaw || !schoolDistrict) {
       return NextResponse.json(
         { message: "All fields are required" },
         { status: 400 }
       )
     }
 
-    // Validate role
-    if (!roleMap[role]) {
+    // Validate role using type guard
+    if (!isValidRoleKey(roleRaw)) {
       return NextResponse.json(
         { message: "Invalid role" },
         { status: 400 }
       )
     }
+    const prismaRole = roleRaw;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -62,7 +69,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         firstName,
         lastName,
-        role: roleMap[role],
+        role: roleMap[prismaRole],
         schoolDistrict
       }
     })
