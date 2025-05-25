@@ -56,7 +56,7 @@ export default function SignInPage() {
         email,
         password,
         callbackUrl,
-        redirect: true
+        redirect: false
       })
 
       console.log("[DEBUG] Sign in result:", result)
@@ -68,28 +68,8 @@ export default function SignInPage() {
           : `Sign in error: ${result.error}`)
         setIsLoading(false)
       } else if (result?.ok) {
-        console.log("[DEBUG] Sign in successful, waiting for session...")
-        // Wait for session to be set
-        const checkSession = async () => {
-          try {
-            const response = await fetch("/api/auth/session")
-            const sessionData = await response.json()
-            console.log("[DEBUG] Session check response:", sessionData)
-            
-            if (sessionData?.user) {
-              console.log("[DEBUG] Session confirmed, redirecting to:", callbackUrl)
-              router.push(callbackUrl)
-            } else {
-              console.log("[DEBUG] Session not set yet, retrying...")
-              setTimeout(checkSession, 100)
-            }
-          } catch (error) {
-            console.error("[DEBUG] Error checking session:", error)
-            setIsLoading(false)
-            setError("Error verifying session. Please try again.")
-          }
-        }
-        checkSession()
+        console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
+        router.push(callbackUrl)
       }
     } catch (error) {
       console.error("[DEBUG] Unexpected error during sign in:", error)
