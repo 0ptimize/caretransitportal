@@ -161,11 +161,7 @@ export const authOptions: NextAuthOptions = {
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
       }
-      // Handle absolute URLs that match our domain
-      const urlObj = new URL(url)
-      if (urlObj.hostname.endsWith('.vercel.app')) {
-        return url
-      }
+      // Always use the public site URL
       return baseUrl
     }
   },
