@@ -7,7 +7,7 @@ export default withAuth(
     const path = req.nextUrl.pathname
     const callbackUrl = encodeURIComponent(path)
 
-    console.log("[DEBUG] Middleware - path:", path, "token:", token)
+    console.log("[DEBUG] Middleware - path:", path, "token:", JSON.stringify(token))
 
     // Admin routes
     if (path.startsWith("/admin")) {
@@ -34,7 +34,11 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        console.log("[DEBUG] Authorized callback - path:", req.nextUrl.pathname, "token:", token)
+        if (req.nextUrl.pathname.startsWith('/admin')) {
+          console.log("[DEBUG] Authorized callback for /admin - path:", req.nextUrl.pathname, "token:", JSON.stringify(token))
+        } else {
+          console.log("[DEBUG] Authorized callback - path:", req.nextUrl.pathname, "token:", JSON.stringify(token))
+        }
         // Allow access to token endpoint and public routes
         if (req.nextUrl.pathname === '/api/auth/token' || 
             req.nextUrl.pathname === '/auth/signin' ||
