@@ -83,7 +83,7 @@ export const authOptions: NextAuthOptions = {
   cookies: {
     sessionToken: {
       name: process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
+        ? "__Host-next-auth.session-token"
         : "next-auth.session-token",
       options: {
         httpOnly: true,
@@ -96,7 +96,7 @@ export const authOptions: NextAuthOptions = {
     },
     callbackUrl: {
       name: process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.callback-url"
+        ? "__Host-next-auth.callback-url"
         : "next-auth.callback-url",
       options: {
         httpOnly: true,
@@ -116,7 +116,8 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined
+        domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
+        maxAge: 30 * 24 * 60 * 60 // 30 days
       }
     }
   },
