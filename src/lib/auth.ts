@@ -79,9 +79,21 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true
+      }
+    }
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        console.log("JWT callback - adding user data to token:", { id: user.id, role: user.role })
         token.id = user.id
         token.role = user.role
         token.schoolDistrict = user.schoolDistrict
@@ -90,6 +102,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
+        console.log("Session callback - adding token data to session:", { id: token.id, role: token.role })
         session.user.id = token.id
         session.user.role = token.role
         session.user.schoolDistrict = token.schoolDistrict
@@ -97,6 +110,7 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
+      console.log("Redirect callback - url:", url, "baseUrl:", baseUrl)
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
       }
@@ -112,5 +126,5 @@ export const authOptions: NextAuthOptions = {
     signOut: "/auth/signin"
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development"
+  debug: true
 } 
