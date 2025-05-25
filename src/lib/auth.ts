@@ -90,7 +90,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : 'caretransitportal-fq3kmq2fn-jaysons-projects-daf93732.vercel.app'
+        domain: isDevelopment ? undefined : '.vercel.app'
       }
     },
     callbackUrl: {
@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : 'caretransitportal-fq3kmq2fn-jaysons-projects-daf93732.vercel.app'
+        domain: isDevelopment ? undefined : '.vercel.app'
       }
     },
     csrfToken: {
@@ -110,7 +110,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : 'caretransitportal-fq3kmq2fn-jaysons-projects-daf93732.vercel.app'
+        domain: isDevelopment ? undefined : '.vercel.app'
       }
     }
   },
