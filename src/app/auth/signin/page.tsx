@@ -44,8 +44,26 @@ export default function SignInPage() {
           : `Sign in error: ${result.error}`)
         setIsLoading(false)
       } else if (result?.ok) {
-        console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
-        window.location.href = callbackUrl // Force full reload to ensure session cookie is sent
+        console.log("[DEBUG] Sign in successful, checking session...")
+        // Wait for session to be set
+        const checkSession = async () => {
+          try {
+            const response = await fetch("/api/auth/session")
+            const session = await response.json()
+            if (session?.user) {
+              console.log("[DEBUG] Session confirmed, redirecting to:", callbackUrl)
+              window.location.href = callbackUrl
+            } else {
+              console.log("[DEBUG] Session not set yet, retrying...")
+              setTimeout(checkSession, 100)
+            }
+          } catch (error) {
+            console.error("[DEBUG] Error checking session:", error)
+            setIsLoading(false)
+            setError("Error verifying session. Please try again.")
+          }
+        }
+        checkSession()
       }
     } catch (error) {
       console.error("Sign in exception:", error)
