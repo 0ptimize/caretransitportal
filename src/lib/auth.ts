@@ -157,10 +157,13 @@ export const authOptions: NextAuthOptions = {
         console.log("[DEBUG] No callbackUrl found, redirecting to /admin")
         return `${baseUrl}/admin`
       }
+      // Handle relative URLs
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
       }
-      else if (new URL(url).origin === baseUrl) {
+      // Handle absolute URLs that match our domain
+      const urlObj = new URL(url)
+      if (urlObj.hostname.endsWith('.vercel.app')) {
         return url
       }
       return baseUrl
