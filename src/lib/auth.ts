@@ -87,7 +87,7 @@ export const authOptions: NextAuthOptions = {
         : "next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
         : "next-auth.callback-url",
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
@@ -113,7 +113,7 @@ export const authOptions: NextAuthOptions = {
         : "next-auth.csrf-token",
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
