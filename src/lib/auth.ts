@@ -111,18 +111,22 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log("JWT callback - token:", token, "user:", user, "account:", account)
+      console.log("[DEBUG] JWT callback - token:", token, "user:", user, "account:", account)
       if (user) {
         token.id = user.id
+        token.email = user.email
+        token.name = user.email ? user.email.split('@')[0] : undefined
         token.role = user.role
         token.schoolDistrict = user.schoolDistrict
       }
       return token
     },
     async session({ session, token }) {
-      console.log("Session callback - session:", session, "token:", token)
+      console.log("[DEBUG] Session callback - session:", session, "token:", token)
       if (token) {
         session.user.id = token.id
+        session.user.email = token.email
+        session.user.name = token.name
         session.user.role = token.role
         session.user.schoolDistrict = token.schoolDistrict
       }
@@ -130,9 +134,15 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl)
-      // Always redirect to /admin after successful login
+      // If the URL is a sign-in URL with a callbackUrl parameter, use that
       if (url.startsWith("/api/auth/signin")) {
-        console.log("[DEBUG] Redirecting to /admin after login")
+        const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl")
+        if (callbackUrl) {
+          console.log("[DEBUG] Redirecting to callbackUrl:", callbackUrl)
+          return `${baseUrl}${callbackUrl}`
+        }
+        // Default to /admin if no callbackUrl is provided
+        console.log("[DEBUG] No callbackUrl found, redirecting to /admin")
         return `${baseUrl}/admin`
       }
       if (url.startsWith("/")) {

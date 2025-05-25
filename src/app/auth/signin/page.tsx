@@ -47,6 +47,7 @@ export default function SignInPage() {
       }
 
       if (result?.ok) {
+        console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
         router.push(callbackUrl)
       }
     } catch (error) {
