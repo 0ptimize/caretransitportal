@@ -1,9 +1,8 @@
 import { Pool } from 'pg'
-import { getPrismaClient } from './prisma'
 
 // Create a connection pool with increased capacity
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_PRISMA_URL,
+  connectionString: process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_PRISMA_URL,
   max: 100, // Support hundreds of concurrent users
   min: 10, // Maintain a minimum of 10 connections
   idleTimeoutMillis: 60000, // 1 minute idle timeout
@@ -17,7 +16,5 @@ pool.on('error', (err) => {
   process.exit(-1)
 })
 
-const prisma = getPrismaClient()
-
 // Export the pool for direct database access if needed
-export { pool, prisma } 
+export { pool } 
