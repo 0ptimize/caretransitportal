@@ -4,29 +4,32 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Use direct connection string instead of pooled one
+const connectionString = process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_PRISMA_URL
+
 // Configure Prisma for serverless environment
 const prismaClientSingleton = () => {
   return new PrismaClient({
     datasources: {
       db: {
-        url: process.env.POSTGRES_PRISMA_URL
+        url: connectionString
       }
     },
     log: ['error', 'warn'],
     // @ts-ignore - These are valid Prisma options but not in the types
     __internal: {
       engine: {
-        // Completely disable prepared statements
+        // Completely disable prepared statements and pooling
         disablePreparedStatements: true,
-        // Disable all caching
         preparedStatements: false,
         statementCache: false,
         queryCache: false,
-        // Connection pooling settings
-        connectionLimit: 100,
-        poolTimeout: 30,
-        // Disable connection pooling in development
-        ...(process.env.NODE_ENV === 'development' ? { pool: false } : {})
+        pool: false,
+        // Disable all connection pooling
+        connectionLimit: 1,
+        poolTimeout: 0,
+        // Force new connections
+        forceNewConnection: true
       }
     }
   })
@@ -34,28 +37,21 @@ const prismaClientSingleton = () => {
 
 let prisma: PrismaClient
 
-// Use a single instance in development
-if (process.env.NODE_ENV === 'development') {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = prismaClientSingleton()
+// Always create a new instance in both development and production
+prisma = prismaClientSingleton()
+
+// Handle cleanup
+const cleanup = async () => {
+  try {
+    await prisma.$disconnect()
+  } catch (error) {
+    console.error('Error disconnecting Prisma client:', error)
   }
-  prisma = globalForPrisma.prisma
-} else {
-  // In production, create a new instance per request
-  prisma = prismaClientSingleton()
 }
 
-// Handle cleanup in production
-if (process.env.NODE_ENV === 'production') {
-  // Cleanup function to disconnect Prisma client
-  const cleanup = async () => {
-    await prisma.$disconnect()
-  }
-  
-  // Register cleanup on process termination
-  process.on('beforeExit', cleanup)
-  process.on('SIGINT', cleanup)
-  process.on('SIGTERM', cleanup)
-}
+// Register cleanup on process termination
+process.on('beforeExit', cleanup)
+process.on('SIGINT', cleanup)
+process.on('SIGTERM', cleanup)
 
 export { prisma } 
