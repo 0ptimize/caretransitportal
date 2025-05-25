@@ -52,7 +52,7 @@ export default function SignInPage() {
             const session = await response.json()
             if (session?.user) {
               console.log("[DEBUG] Session confirmed, redirecting to:", callbackUrl)
-              window.location.href = callbackUrl
+              router.push(callbackUrl)
             } else {
               console.log("[DEBUG] Session not set yet, retrying...")
               setTimeout(checkSession, 100)
