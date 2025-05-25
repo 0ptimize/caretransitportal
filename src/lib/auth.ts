@@ -123,7 +123,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log('[DEBUG] JWT callback - token (before):', token, 'user:', user, 'account:', account);
+      console.log('[DEBUG] JWT callback - token (before):', JSON.stringify(token), 'user:', JSON.stringify(user), 'account:', JSON.stringify(account));
       if (user) {
         const now = Math.floor(Date.now() / 1000);
         const updatedToken = {
@@ -137,14 +137,14 @@ export const authOptions: NextAuthOptions = {
           exp: now + (30 * 24 * 60 * 60), // 30 days in seconds
           expires: new Date((now + (30 * 24 * 60 * 60)) * 1000).toISOString()
         };
-        console.log('[DEBUG] JWT callback - updated token:', updatedToken);
+        console.log('[DEBUG] JWT callback - updated token:', JSON.stringify(updatedToken));
         return updatedToken;
       }
-      console.log('[DEBUG] JWT callback - no user data, returning existing token:', token);
+      console.log('[DEBUG] JWT callback - no user data, returning existing token:', JSON.stringify(token));
       return token;
     },
     async session({ session, token }) {
-      console.log("[DEBUG] Session callback - session (before):", session, "token:", token)
+      console.log("[DEBUG] Session callback - session (before):", JSON.stringify(session), "token:", JSON.stringify(token))
       if (token) {
         session.user = {
           id: token.id as string,
@@ -155,7 +155,7 @@ export const authOptions: NextAuthOptions = {
         };
         session.expires = token.expires as string;
       }
-      console.log("[DEBUG] Session callback - session (after):", session)
+      console.log("[DEBUG] Session callback - session (after):", JSON.stringify(session))
       return session;
     },
     async redirect({ url, baseUrl }) {
