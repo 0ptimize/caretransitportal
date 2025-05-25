@@ -13,7 +13,7 @@ export default withAuth(
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: true,
       cookieName: process.env.NODE_ENV === "production"
-        ? "__Host-next-auth.session-token"
+        ? "__Secure-next-auth.session-token"
         : "next-auth.session-token",
       raw: false
     })

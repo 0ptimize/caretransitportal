@@ -83,11 +83,11 @@ export const authOptions: NextAuthOptions = {
   cookies: {
     sessionToken: {
       name: process.env.NODE_ENV === "production"
-        ? "__Host-next-auth.session-token"
+        ? "__Secure-next-auth.session-token"
         : "next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
@@ -96,11 +96,11 @@ export const authOptions: NextAuthOptions = {
     },
     callbackUrl: {
       name: process.env.NODE_ENV === "production"
-        ? "__Host-next-auth.callback-url"
+        ? "__Secure-next-auth.callback-url"
         : "next-auth.callback-url",
       options: {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
@@ -109,11 +109,11 @@ export const authOptions: NextAuthOptions = {
     },
     csrfToken: {
       name: process.env.NODE_ENV === "production"
-        ? "__Host-next-auth.csrf-token"
+        ? "__Secure-next-auth.csrf-token"
         : "next-auth.csrf-token",
       options: {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? "caretransitportal.vercel.app" : undefined,
