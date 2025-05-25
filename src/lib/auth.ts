@@ -1,6 +1,6 @@
 import { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/prisma"
 import bcryptjs from "bcryptjs"
 import { UserRole } from "@/types/next-auth"
 
@@ -23,6 +23,8 @@ export const authOptions: NextAuthOptions = {
           console.error("Missing credentials")
           throw new Error("Email and password are required")
         }
+
+        const prisma = getPrismaClient()
 
         try {
           console.log("Attempting to find user:", credentials.email)
@@ -66,6 +68,8 @@ export const authOptions: NextAuthOptions = {
             throw error
           }
           throw new Error("Authentication failed")
+        } finally {
+          await prisma.$disconnect()
         }
       }
     })
