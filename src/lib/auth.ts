@@ -6,9 +6,7 @@ import { UserRole } from "@/types/next-auth"
 
 const isDevelopment = process.env.NODE_ENV === "development"
 const port = process.env.PORT || "3000"
-const baseUrl = isDevelopment 
-  ? `http://localhost:${port}`
-  : "https://caretransitportal.vercel.app"
+const baseUrl = "https://caretransitportal.vercel.app"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -90,7 +88,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : '.vercel.app'
+        domain: isDevelopment ? undefined : 'caretransitportal.vercel.app'
       }
     },
     callbackUrl: {
@@ -100,7 +98,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : '.vercel.app'
+        domain: isDevelopment ? undefined : 'caretransitportal.vercel.app'
       }
     },
     csrfToken: {
@@ -110,7 +108,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : '.vercel.app'
+        domain: isDevelopment ? undefined : 'caretransitportal.vercel.app'
       }
     }
   },

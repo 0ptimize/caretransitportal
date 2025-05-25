@@ -30,6 +30,9 @@ export default function SignInPage() {
   useEffect(() => {
     if (!mounted) return
 
+    console.log("[DEBUG] Session status:", status)
+    console.log("[DEBUG] Session data:", session)
+
     if (status === "authenticated" && session?.user) {
       console.log("[DEBUG] Already authenticated, redirecting to:", searchParams.get("callbackUrl") || "/admin")
       const callbackUrl = searchParams.get("callbackUrl") || "/admin"
@@ -48,7 +51,7 @@ export default function SignInPage() {
     const callbackUrl = searchParams.get("callbackUrl") || "/admin"
 
     try {
-      console.log("[DEBUG] Attempting sign in...")
+      console.log("[DEBUG] Attempting sign in with email:", email)
       const result = await signIn("credentials", {
         email,
         password,
@@ -65,8 +68,28 @@ export default function SignInPage() {
           : `Sign in error: ${result.error}`)
         setIsLoading(false)
       } else if (result?.ok) {
-        console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
-        router.push(callbackUrl)
+        console.log("[DEBUG] Sign in successful, waiting for session...")
+        // Wait for session to be set
+        const checkSession = async () => {
+          try {
+            const response = await fetch("/api/auth/session")
+            const sessionData = await response.json()
+            console.log("[DEBUG] Session check response:", sessionData)
+            
+            if (sessionData?.user) {
+              console.log("[DEBUG] Session confirmed, redirecting to:", callbackUrl)
+              router.push(callbackUrl)
+            } else {
+              console.log("[DEBUG] Session not set yet, retrying...")
+              setTimeout(checkSession, 100)
+            }
+          } catch (error) {
+            console.error("[DEBUG] Error checking session:", error)
+            setIsLoading(false)
+            setError("Error verifying session. Please try again.")
+          }
+        }
+        checkSession()
       }
     } catch (error) {
       console.error("[DEBUG] Unexpected error during sign in:", error)
