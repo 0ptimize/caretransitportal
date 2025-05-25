@@ -88,12 +88,30 @@ export const authOptions: NextAuthOptions = {
         path: '/',
         secure: true
       }
+    },
+    callbackUrl: {
+      name: `__Secure-next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true
+      }
+    },
+    csrfToken: {
+      name: `__Host-next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true
+      }
     }
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      console.log("JWT callback - token:", token, "user:", user, "account:", account)
       if (user) {
-        console.log("JWT callback - adding user data to token:", { id: user.id, role: user.role })
         token.id = user.id
         token.role = user.role
         token.schoolDistrict = user.schoolDistrict
@@ -101,8 +119,8 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
+      console.log("Session callback - session:", session, "token:", token)
       if (token) {
-        console.log("Session callback - adding token data to session:", { id: token.id, role: token.role })
         session.user.id = token.id
         session.user.role = token.role
         session.user.schoolDistrict = token.schoolDistrict
@@ -111,6 +129,10 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       console.log("Redirect callback - url:", url, "baseUrl:", baseUrl)
+      // Always redirect to /admin after successful login
+      if (url.startsWith("/api/auth/signin")) {
+        return `${baseUrl}/admin`
+      }
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
       }
