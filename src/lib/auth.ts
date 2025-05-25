@@ -125,6 +125,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       console.log('[DEBUG] JWT callback - token (before):', token, 'user:', user, 'account:', account);
       if (user) {
+        const now = Math.floor(Date.now() / 1000);
         const updatedToken = {
           ...token,
           id: user.id,
@@ -132,7 +133,9 @@ export const authOptions: NextAuthOptions = {
           name: user.email?.split('@')[0] || '',
           role: user.role,
           schoolDistrict: user.schoolDistrict,
-          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          iat: now,
+          exp: now + (30 * 24 * 60 * 60), // 30 days in seconds
+          expires: new Date((now + (30 * 24 * 60 * 60)) * 1000).toISOString()
         };
         console.log('[DEBUG] JWT callback - updated token:', updatedToken);
         return updatedToken;
