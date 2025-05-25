@@ -29,7 +29,8 @@ export default withAuth(
         path === '/auth/signin' ||
         path === '/auth/error' ||
         path === '/api/auth/session' ||
-        path === '/api/auth/callback/credentials') {
+        path === '/api/auth/callback/credentials' ||
+        path === '/api/auth/csrf') {
       console.log("[DEBUG] Public route access granted:", path)
       return NextResponse.next()
     }
@@ -38,7 +39,8 @@ export default withAuth(
     if (path.startsWith("/admin")) {
       if (!token || token.role !== "ADMIN") {
         console.log("[DEBUG] Admin access denied - token:", token ? "exists" : "missing", "role:", token?.role)
-        const url = new URL(`/auth/signin?callbackUrl=/admin`, req.url)
+        const url = new URL(`/auth/signin`, req.url)
+        url.searchParams.set("callbackUrl", "/admin")
         url.searchParams.set("error", "AccessDenied")
         return NextResponse.redirect(url)
       }
@@ -80,7 +82,8 @@ export default withAuth(
             path === '/auth/signin' ||
             path === '/auth/error' ||
             path === '/api/auth/session' ||
-            path === '/api/auth/callback/credentials') {
+            path === '/api/auth/callback/credentials' ||
+            path === '/api/auth/csrf') {
           return true
         }
 
