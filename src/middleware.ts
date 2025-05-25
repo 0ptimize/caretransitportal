@@ -12,8 +12,8 @@ export default withAuth(
       req,
       secret: process.env.NEXTAUTH_SECRET,
       secureCookie: true,
-      cookieName: process.env.NODE_ENV === "production" 
-        ? "__Secure-next-auth.session-token" 
+      cookieName: process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
         : "next-auth.session-token",
       raw: false
     })
