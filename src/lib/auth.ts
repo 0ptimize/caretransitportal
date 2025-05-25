@@ -6,7 +6,7 @@ import { UserRole } from "@/types/next-auth"
 
 const isDevelopment = process.env.NODE_ENV === "development"
 const port = process.env.PORT || "3000"
-const baseUrl = "https://caretransitportal.vercel.app"
+const baseUrl = process.env.NEXTAUTH_URL || "https://caretransitportal.vercel.app"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -127,10 +127,32 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl);
-      if (url.startsWith('/')) {
+      
+      // If the URL is a sign-in URL with a callbackUrl parameter, use that
+      if (url.startsWith("/api/auth/signin")) {
+        const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
+        if (callbackUrl) {
+          console.log("[DEBUG] Redirecting to callbackUrl:", callbackUrl);
+          return `${baseUrl}${callbackUrl}`;
+        }
+        // Default to /admin if no callbackUrl is provided
+        console.log("[DEBUG] No callbackUrl found, redirecting to /admin");
+        return `${baseUrl}/admin`;
+      }
+
+      // Handle relative URLs
+      if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
       }
-      return url.startsWith(baseUrl) ? url : baseUrl;
+
+      // Allow absolute URLs that match our base URL
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+
+      // Default to base URL for any other cases
+      console.log("[DEBUG] Default redirect to baseUrl:", baseUrl);
+      return baseUrl;
     }
   },
   pages: {
