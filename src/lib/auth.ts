@@ -131,7 +131,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.email?.split('@')[0] || '',
           role: user.role,
-          schoolDistrict: user.schoolDistrict
+          schoolDistrict: user.schoolDistrict,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         };
         console.log('[DEBUG] JWT callback - updated token:', updatedToken);
         return updatedToken;
