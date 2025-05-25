@@ -45,7 +45,7 @@ export default function SignInPage() {
         setIsLoading(false)
       } else if (result?.ok) {
         console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
-        router.push(callbackUrl)
+        window.location.href = callbackUrl // Force full reload to ensure session cookie is sent
       }
     } catch (error) {
       console.error("Sign in exception:", error)

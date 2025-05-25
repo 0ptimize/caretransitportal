@@ -15,6 +15,7 @@ export default function AdminLayout({
   const pathname = usePathname()
 
   useEffect(() => {
+    console.log('[DEBUG] AdminLayout session:', session, 'status:', status)
     if (status === "unauthenticated") {
       const callbackUrl = encodeURIComponent(pathname)
       router.push(`/auth/signin?callbackUrl=${callbackUrl}`)

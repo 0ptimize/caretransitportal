@@ -15,6 +15,7 @@ export default function DistrictLayout({
   const pathname = usePathname()
 
   useEffect(() => {
+    console.log('[DEBUG] DistrictLayout session:', session, 'status:', status)
     if (status === "unauthenticated") {
       const callbackUrl = encodeURIComponent(pathname)
       router.push(`/auth/signin?callbackUrl=${callbackUrl}`)
