@@ -30,7 +30,8 @@ export default withAuth(
         path === '/auth/error' ||
         path === '/api/auth/session' ||
         path === '/api/auth/callback/credentials' ||
-        path === '/api/auth/csrf') {
+        path === '/api/auth/csrf' ||
+        path === '/api/auth/signin') {
       console.log("[DEBUG] Public route access granted:", path)
       return NextResponse.next()
     }
@@ -83,7 +84,8 @@ export default withAuth(
             path === '/auth/error' ||
             path === '/api/auth/session' ||
             path === '/api/auth/callback/credentials' ||
-            path === '/api/auth/csrf') {
+            path === '/api/auth/csrf' ||
+            path === '/api/auth/signin') {
           return true
         }
 

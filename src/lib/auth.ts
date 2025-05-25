@@ -89,7 +89,20 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === "production"
+        secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined
+      }
+    },
+    callbackUrl: {
+      name: process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.callback-url"
+        : "next-auth.callback-url",
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined
       }
     }
   },
@@ -128,14 +141,13 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl);
       
-      // If the URL is a sign-in URL with a callbackUrl parameter, use that
-      if (url.startsWith("/api/auth/signin")) {
+      // Handle signin URLs
+      if (url.includes("/auth/signin") || url.includes("/api/auth/signin")) {
         const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
         if (callbackUrl) {
           console.log("[DEBUG] Redirecting to callbackUrl:", callbackUrl);
           return `${baseUrl}${callbackUrl}`;
         }
-        // Default to /admin if no callbackUrl is provided
         console.log("[DEBUG] No callbackUrl found, redirecting to /admin");
         return `${baseUrl}/admin`;
       }
