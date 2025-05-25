@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { getPrismaClient } from "@/lib/prisma"
 import bcryptjs from "bcryptjs"
 import { UserRole } from "@/types/next-auth"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
 
 const isDevelopment = process.env.NODE_ENV === "development"
 const port = process.env.PORT || "3000"
@@ -193,5 +194,6 @@ export const authOptions: NextAuthOptions = {
     signOut: "/auth/signin"
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true
+  debug: true,
+  adapter: PrismaAdapter(getPrismaClient())
 } 
