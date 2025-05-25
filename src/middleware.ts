@@ -1,11 +1,19 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
     // Log at the very top to confirm execution
     console.log("[DEBUG] Middleware ENTRY - path:", req.nextUrl.pathname)
-    const token = req.nextauth.token
+    
+    // Get the token using getToken to ensure proper JWT handling
+    const token = await getToken({ 
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      secureCookie: process.env.NODE_ENV === "production"
+    })
+    
     const path = req.nextUrl.pathname
     const callbackUrl = encodeURIComponent(path)
 
@@ -14,19 +22,19 @@ export default withAuth(
     // Admin routes
     if (path.startsWith("/admin")) {
       console.log("[DEBUG] Admin route check - token role:", token?.role)
-      if (token?.role !== "ADMIN") {
+      if (!token || token.role !== "ADMIN") {
         console.log("[DEBUG] Redirecting to sign-in - invalid role:", token?.role)
         return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
       }
     }
 
     // District routes
-    if (path.startsWith("/district") && token?.role !== "DISTRICT_USER") {
+    if (path.startsWith("/district") && (!token || token.role !== "DISTRICT_USER")) {
       return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
     }
 
     // Employee routes
-    if (path.startsWith("/employee") && token?.role !== "EMPLOYEE_USER") {
+    if (path.startsWith("/employee") && (!token || token.role !== "EMPLOYEE_USER")) {
       return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
     }
 
@@ -35,21 +43,33 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
-        if (req.nextUrl.pathname.startsWith('/admin')) {
-          console.log("[DEBUG] Authorized callback for /admin - path:", req.nextUrl.pathname, "token:", JSON.stringify(token))
-        } else {
-          console.log("[DEBUG] Authorized callback - path:", req.nextUrl.pathname, "token:", JSON.stringify(token))
-        }
+      authorized: async ({ token, req }) => {
+        // Log the full request details for debugging
+        console.log("[DEBUG] Authorized callback - path:", req.nextUrl.pathname)
+        console.log("[DEBUG] Authorized callback - token:", JSON.stringify(token))
+        console.log("[DEBUG] Authorized callback - cookies:", req.cookies.getAll())
+
         // Allow access to token endpoint and public routes
         if (req.nextUrl.pathname === '/api/auth/token' || 
             req.nextUrl.pathname === '/auth/signin' ||
             req.nextUrl.pathname === '/auth/error') {
           console.log("[DEBUG] Allowing access to public route:", req.nextUrl.pathname)
-          return true;
+          return true
         }
+
+        // For protected routes, ensure token exists and has required role
+        if (req.nextUrl.pathname.startsWith('/admin')) {
+          return token?.role === "ADMIN"
+        }
+        if (req.nextUrl.pathname.startsWith('/district')) {
+          return token?.role === "DISTRICT_USER"
+        }
+        if (req.nextUrl.pathname.startsWith('/employee')) {
+          return token?.role === "EMPLOYEE_USER"
+        }
+
         console.log("[DEBUG] Checking token for protected route:", req.nextUrl.pathname)
-        return !!token;
+        return !!token
       }
     },
     pages: {
