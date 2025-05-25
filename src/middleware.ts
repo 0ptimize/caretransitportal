@@ -3,6 +3,8 @@ import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
+    // Log at the very top to confirm execution
+    console.log("[DEBUG] Middleware ENTRY - path:", req.nextUrl.pathname)
     const token = req.nextauth.token
     const path = req.nextUrl.pathname
     const callbackUrl = encodeURIComponent(path)
