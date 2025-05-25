@@ -14,19 +14,22 @@ export default withAuth(
       secureCookie: true,
       cookieName: process.env.NODE_ENV === "production" 
         ? "__Secure-next-auth.session-token" 
-        : "next-auth.session-token"
+        : "next-auth.session-token",
+      raw: false
     })
     
     console.log("[DEBUG] Middleware - token:", token ? "exists" : "missing")
     if (token) {
       console.log("[DEBUG] Middleware - token role:", token.role)
+      console.log("[DEBUG] Middleware - token email:", token.email)
     }
 
     // Allow access to public routes
     if (path === '/api/auth/token' || 
         path === '/auth/signin' ||
         path === '/auth/error' ||
-        path === '/api/auth/session') {
+        path === '/api/auth/session' ||
+        path === '/api/auth/callback/credentials') {
       console.log("[DEBUG] Public route access granted:", path)
       return NextResponse.next()
     }
@@ -76,7 +79,8 @@ export default withAuth(
         if (path === '/api/auth/token' || 
             path === '/auth/signin' ||
             path === '/auth/error' ||
-            path === '/api/auth/session') {
+            path === '/api/auth/session' ||
+            path === '/api/auth/callback/credentials') {
           return true
         }
 

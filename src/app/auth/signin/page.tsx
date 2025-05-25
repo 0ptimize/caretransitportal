@@ -24,9 +24,17 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  // Handle client-side mounting
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Check if we already have a valid session
   useEffect(() => {
+    if (!mounted) return
+
     const checkSession = async () => {
       if (status === "authenticated" && session?.user) {
         console.log("[DEBUG] Already authenticated, redirecting to:", searchParams.get("callbackUrl") || "/admin")
@@ -40,7 +48,7 @@ export default function SignInPage() {
       }
     }
     checkSession()
-  }, [status, session, searchParams, router])
+  }, [status, session, searchParams, router, mounted])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

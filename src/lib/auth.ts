@@ -90,7 +90,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : '.vercel.app'
+        domain: isDevelopment ? undefined : 'caretransitportal-fq3kmq2fn-jaysons-projects-daf93732.vercel.app'
       }
     },
     callbackUrl: {
@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : '.vercel.app'
+        domain: isDevelopment ? undefined : 'caretransitportal-fq3kmq2fn-jaysons-projects-daf93732.vercel.app'
       }
     },
     csrfToken: {
@@ -110,7 +110,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: isDevelopment ? undefined : '.vercel.app'
+        domain: isDevelopment ? undefined : 'caretransitportal-fq3kmq2fn-jaysons-projects-daf93732.vercel.app'
       }
     }
   },
@@ -118,11 +118,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       console.log('[DEBUG] JWT callback - token (before):', token, 'user:', user, 'account:', account);
       if (user) {
-        token.name = user.email ? user.email.split('@')[0] : '';
-        token.email = user.email;
-        token.role = user.role;
-        token.id = user.id;
-        token.schoolDistrict = user.schoolDistrict;
+        return {
+          ...token,
+          id: user.id,
+          email: user.email,
+          name: user.email?.split('@')[0] || '',
+          role: user.role,
+          schoolDistrict: user.schoolDistrict
+        };
       }
       console.log('[DEBUG] JWT callback - token (after):', token);
       return token;
@@ -131,16 +134,15 @@ export const authOptions: NextAuthOptions = {
       console.log("[DEBUG] Session callback - session (before):", session, "token:", token)
       if (token) {
         session.user = {
-          ...session.user,
-          id: token.id,
-          email: token.email,
-          name: token.name,
-          role: token.role,
-          schoolDistrict: token.schoolDistrict
-        }
+          id: token.id as string,
+          email: token.email as string,
+          name: token.name as string,
+          role: token.role as UserRole,
+          schoolDistrict: token.schoolDistrict as string
+        };
       }
       console.log("[DEBUG] Session callback - session (after):", session)
-      return session
+      return session;
     },
     async redirect({ url, baseUrl }) {
       console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl)
