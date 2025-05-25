@@ -56,7 +56,7 @@ export default function SignInPage() {
         email,
         password,
         callbackUrl,
-        redirect: false
+        redirect: true
       })
 
       console.log("[DEBUG] Sign in result:", result)
