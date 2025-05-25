@@ -56,7 +56,7 @@ export default function SignInPage() {
         email,
         password,
         callbackUrl,
-        redirect: true
+        redirect: false
       })
 
       console.log("[DEBUG] Sign in result:", result)
@@ -67,6 +67,9 @@ export default function SignInPage() {
           ? "Invalid email or password" 
           : `Sign in error: ${result.error}`)
         setIsLoading(false)
+      } else if (result?.ok) {
+        console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
+        router.push(callbackUrl)
       }
     } catch (error) {
       console.error("[DEBUG] Unexpected error during sign in:", error)
