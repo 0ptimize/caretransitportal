@@ -5,8 +5,10 @@ import { getToken } from "next-auth/jwt"
 export default withAuth(
   async function middleware(req) {
     // Log at the very top to confirm execution
-    console.log("[DEBUG] Middleware ENTRY - path:", req.nextUrl.pathname)
-    console.log("[DEBUG] Middleware ENTRY - cookies:", req.cookies.getAll())
+    const path = req.nextUrl.pathname
+    const allCookies = req.cookies.getAll()
+    console.log("[DEBUG] Middleware ENTRY - path:", path)
+    console.log("[DEBUG] Middleware ENTRY - cookies:", allCookies)
     
     // Get the token using getToken to ensure proper JWT handling
     const token = await getToken({ 
@@ -18,10 +20,13 @@ export default withAuth(
         : "next-auth.session-token"
     })
     
-    const path = req.nextUrl.pathname
-    const callbackUrl = encodeURIComponent(path)
+    if (!token) {
+      console.warn("[DEBUG] Middleware - token is null! All cookies:", allCookies)
+    } else {
+      console.log("[DEBUG] Middleware - token:", JSON.stringify(token))
+    }
 
-    console.log("[DEBUG] Middleware - path:", path, "token:", JSON.stringify(token))
+    const callbackUrl = encodeURIComponent(path)
 
     // Admin routes
     if (path.startsWith("/admin")) {
