@@ -1,6 +1,12 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
+import jwt from "jsonwebtoken"
+
+interface DecodedToken {
+  role?: string;
+  email?: string;
+}
 
 export default withAuth(
   async function middleware(req) {
@@ -8,20 +14,25 @@ export default withAuth(
     console.log("[DEBUG] Middleware ENTRY - path:", path)
     
     // Get the token using getToken
-    const token = await getToken({ 
-      req,
-      secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: true,
-      cookieName: process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
-      raw: false
-    })
+    const authHeader = req.headers.get("authorization")
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null
+    let decoded: DecodedToken | null = null;
+    if (!token) {
+      return NextResponse.redirect(new URL("/auth/signin", req.url))
+    }
+    try {
+      decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET as string) as DecodedToken
+    } catch (error) {
+      return NextResponse.redirect(new URL("/auth/signin", req.url))
+    }
+    if (!decoded || !decoded.role) {
+      return NextResponse.redirect(new URL("/auth/signin", req.url))
+    }
     
     console.log("[DEBUG] Middleware - token:", token ? "exists" : "missing")
-    if (token) {
-      console.log("[DEBUG] Middleware - token role:", token.role)
-      console.log("[DEBUG] Middleware - token email:", token.email)
+    if (decoded) {
+      console.log("[DEBUG] Middleware - token role:", decoded.role)
+      console.log("[DEBUG] Middleware - token email:", decoded.email)
     }
 
     // Allow access to public routes
@@ -38,8 +49,8 @@ export default withAuth(
 
     // Admin routes
     if (path.startsWith("/admin")) {
-      if (!token || token.role !== "ADMIN") {
-        console.log("[DEBUG] Admin access denied - token:", token ? "exists" : "missing", "role:", token?.role)
+      if (!decoded || decoded.role !== "ADMIN") {
+        console.log("[DEBUG] Admin access denied - token:", token ? "exists" : "missing", "role:", decoded?.role)
         const url = new URL(`/auth/signin`, req.url)
         url.searchParams.set("callbackUrl", "/admin")
         url.searchParams.set("error", "AccessDenied")
@@ -50,8 +61,8 @@ export default withAuth(
 
     // District routes
     if (path.startsWith("/district")) {
-      if (!token || token.role !== "DISTRICT_USER") {
-        console.log("[DEBUG] District access denied - token:", token ? "exists" : "missing", "role:", token?.role)
+      if (!decoded || decoded.role !== "DISTRICT_USER") {
+        console.log("[DEBUG] District access denied - token:", token ? "exists" : "missing", "role:", decoded?.role)
         const url = new URL(`/auth/signin?callbackUrl=/district`, req.url)
         url.searchParams.set("error", "AccessDenied")
         return NextResponse.redirect(url)
@@ -61,8 +72,8 @@ export default withAuth(
 
     // Employee routes
     if (path.startsWith("/employee")) {
-      if (!token || token.role !== "EMPLOYEE_USER") {
-        console.log("[DEBUG] Employee access denied - token:", token ? "exists" : "missing", "role:", token?.role)
+      if (!decoded || decoded.role !== "EMPLOYEE_USER") {
+        console.log("[DEBUG] Employee access denied - token:", token ? "exists" : "missing", "role:", decoded?.role)
         const url = new URL(`/auth/signin?callbackUrl=/employee`, req.url)
         url.searchParams.set("error", "AccessDenied")
         return NextResponse.redirect(url)
