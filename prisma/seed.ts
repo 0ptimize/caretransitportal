@@ -1,7 +1,8 @@
-import { prisma } from '../src/lib/prisma'
+import { getPrismaClient } from '../src/lib/prisma'
 import bcrypt from "bcryptjs"
 
 async function main() {
+  const prisma = getPrismaClient()
   try {
     // Create admin user
     const adminPassword = await bcrypt.hash("Admin@123", 10)
