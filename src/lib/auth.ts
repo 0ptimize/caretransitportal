@@ -145,33 +145,19 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl)
-      
-      // If we're being redirected to the signin page after a successful login
-      if (url.includes("/api/auth/signin")) {
-        console.log("[DEBUG] Redirecting to admin page after successful login")
-        return `${baseUrl}/admin`
-      }
-      
-      // If the URL is a sign-in URL with a callbackUrl parameter, use that
-      if (url.startsWith("/api/auth/signin")) {
-        const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl")
-        if (callbackUrl) {
-          console.log("[DEBUG] Redirecting to callbackUrl:", callbackUrl)
-          return `${baseUrl}${callbackUrl}`
+      const prodBase = "https://caretransitportal.vercel.app";
+      try {
+        const parsed = new URL(url, prodBase);
+        if (parsed.origin !== prodBase) {
+          // Force all redirects to the production domain
+          return prodBase;
         }
-        // Default to /admin if no callbackUrl is provided
-        console.log("[DEBUG] No callbackUrl found, redirecting to /admin")
-        return `${baseUrl}/admin`
+        // Allow only URLs on the production domain
+        return parsed.href;
+      } catch {
+        // Fallback to prod
+        return prodBase;
       }
-      
-      // Handle relative URLs
-      if (url.startsWith("/")) {
-        return `${baseUrl}${url}`
-      }
-      
-      // Always use the public site URL
-      return baseUrl
     }
   },
   pages: {
