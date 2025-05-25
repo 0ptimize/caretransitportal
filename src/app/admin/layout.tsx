@@ -1,43 +1,17 @@
-"use client"
+import { ReactNode } from "react"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-import { useSession } from "next-auth/react"
-import { useRouter, usePathname } from "next/navigation"
-import { useEffect } from "react"
-import type { UserRole } from "@/types/next-auth"
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const pathname = usePathname()
+  const session = await getServerSession(authOptions)
 
-  useEffect(() => {
-    console.log('[DEBUG] AdminLayout session:', session, 'status:', status)
-    if (status === "unauthenticated") {
-      const callbackUrl = encodeURIComponent(pathname)
-      router.push(`/auth/signin?callbackUrl=${callbackUrl}`)
-    } else if (status === "authenticated" && session?.user?.role !== "ADMIN") {
-      console.error("Unauthorized access attempt:", {
-        role: session?.user?.role,
-        path: pathname
-      })
-      router.push("/")
-    }
-  }, [session, status, router, pathname])
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    )
-  }
-
-  if (status === "unauthenticated" || session?.user?.role !== "ADMIN") {
-    return null
+  if (!session || session.user.role !== "ADMIN") {
+    redirect(`/auth/signin?callbackUrl=/admin`)
   }
 
   return <>{children}</>
