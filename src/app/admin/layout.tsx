@@ -10,15 +10,20 @@ export default async function AdminLayout({
 }) {
   console.log("[DEBUG] AdminLayout: Checking session...")
   const session = await getServerSession(authOptions)
-  console.log("[DEBUG] AdminLayout: Session state:", session)
+  console.log("[DEBUG] AdminLayout: Session state:", JSON.stringify(session, null, 2))
 
   if (!session) {
     console.log("[DEBUG] AdminLayout: No session found, redirecting to signin")
     redirect(`/auth/signin?callbackUrl=/admin`)
   }
 
+  if (!session.user) {
+    console.log("[DEBUG] AdminLayout: No user in session, redirecting to signin")
+    redirect(`/auth/signin?callbackUrl=/admin`)
+  }
+
   if (session.user.role !== "ADMIN") {
-    console.log("[DEBUG] AdminLayout: User is not admin, redirecting to signin")
+    console.log("[DEBUG] AdminLayout: User is not admin, role:", session.user.role)
     redirect(`/auth/signin?callbackUrl=/admin`)
   }
 

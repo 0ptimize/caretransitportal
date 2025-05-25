@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { signIn, useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Moon, Sun } from "lucide-react"
@@ -15,9 +15,18 @@ const baseUrl = isDevelopment
 export default function SignInPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { theme, setTheme } = useTheme()
+
+  // Check if we already have a valid session
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      console.log("[DEBUG] Already authenticated, redirecting to:", searchParams.get("callbackUrl") || "/admin")
+      router.push(searchParams.get("callbackUrl") || "/admin")
+    }
+  }, [status, session, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -30,6 +39,7 @@ export default function SignInPage() {
     const callbackUrl = searchParams.get("callbackUrl") || "/admin"
 
     try {
+      console.log("[DEBUG] Attempting sign in...")
       const result = await signIn("credentials", {
         email,
         password,
@@ -37,8 +47,10 @@ export default function SignInPage() {
         redirect: false
       })
 
+      console.log("[DEBUG] Sign in result:", result)
+
       if (result?.error) {
-        console.error("Sign in error:", result.error)
+        console.error("[DEBUG] Sign in error:", result.error)
         setError(result.error === "Invalid credentials" 
           ? "Invalid email or password" 
           : `Sign in error: ${result.error}`)
@@ -49,10 +61,13 @@ export default function SignInPage() {
         const checkSession = async () => {
           try {
             const response = await fetch("/api/auth/session")
-            const session = await response.json()
-            if (session?.user) {
+            const sessionData = await response.json()
+            console.log("[DEBUG] Session check response:", sessionData)
+            
+            if (sessionData?.user) {
               console.log("[DEBUG] Session confirmed, redirecting to:", callbackUrl)
-              router.push(callbackUrl)
+              // Force a hard navigation to ensure session is properly set
+              window.location.href = callbackUrl
             } else {
               console.log("[DEBUG] Session not set yet, retrying...")
               setTimeout(checkSession, 100)
@@ -66,9 +81,9 @@ export default function SignInPage() {
         checkSession()
       }
     } catch (error) {
-      console.error("Sign in exception:", error)
+      console.error("[DEBUG] Sign in exception:", error)
       if (error instanceof Error) {
-        console.error("Error details:", {
+        console.error("[DEBUG] Error details:", {
           name: error.name,
           message: error.message,
           stack: error.stack
