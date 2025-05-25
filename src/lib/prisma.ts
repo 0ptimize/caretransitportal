@@ -4,34 +4,45 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.POSTGRES_PRISMA_URL
+// Configure Prisma for serverless environment
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.POSTGRES_PRISMA_URL
+      }
+    },
+    log: ['error', 'warn'],
+    // @ts-ignore - These are valid Prisma options but not in the types
+    __internal: {
+      engine: {
+        // Completely disable prepared statements
+        disablePreparedStatements: true,
+        // Disable all caching
+        preparedStatements: false,
+        statementCache: false,
+        queryCache: false,
+        // Connection pooling settings
+        connectionLimit: 100,
+        poolTimeout: 30,
+        // Disable connection pooling in development
+        ...(process.env.NODE_ENV === 'development' ? { pool: false } : {})
+      }
     }
-  },
-  // Disable prepared statements for pooled connections
-  log: ['error', 'warn'],
-  // @ts-ignore - This is a valid Prisma option but not in the types
-  __internal: {
-    engine: {
-      disablePreparedStatements: true,
-      // Add connection pooling configuration
-      connectionLimit: 100, // Support hundreds of concurrent users
-      poolTimeout: 30, // 30 second timeout
-      // Disable connection pooling in development
-      ...(process.env.NODE_ENV === 'development' ? { pool: false } : {}),
-      // Additional settings to prevent prepared statement issues
-      preparedStatements: false,
-      statementCache: false,
-      queryCache: false
-    }
-  }
-})
+  })
+}
 
-// Only create a new PrismaClient instance in development
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
+let prisma: PrismaClient
+
+// Use a single instance in development
+if (process.env.NODE_ENV === 'development') {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = prismaClientSingleton()
+  }
+  prisma = globalForPrisma.prisma
+} else {
+  // In production, create a new instance per request
+  prisma = prismaClientSingleton()
 }
 
 // Handle cleanup in production
@@ -45,4 +56,6 @@ if (process.env.NODE_ENV === 'production') {
   process.on('beforeExit', cleanup)
   process.on('SIGINT', cleanup)
   process.on('SIGTERM', cleanup)
-} 
+}
+
+export { prisma } 
