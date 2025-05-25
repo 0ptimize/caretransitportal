@@ -6,12 +6,16 @@ export default withAuth(
   async function middleware(req) {
     // Log at the very top to confirm execution
     console.log("[DEBUG] Middleware ENTRY - path:", req.nextUrl.pathname)
+    console.log("[DEBUG] Middleware ENTRY - cookies:", req.cookies.getAll())
     
     // Get the token using getToken to ensure proper JWT handling
     const token = await getToken({ 
       req,
       secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === "production"
+      secureCookie: process.env.NODE_ENV === "production",
+      cookieName: process.env.NODE_ENV === "production" 
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token"
     })
     
     const path = req.nextUrl.pathname
