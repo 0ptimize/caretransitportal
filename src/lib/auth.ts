@@ -153,6 +153,7 @@ export const authOptions: NextAuthOptions = {
           role: token.role as UserRole,
           schoolDistrict: token.schoolDistrict as string
         };
+        session.expires = token.expires as string;
       }
       console.log("[DEBUG] Session callback - session (after):", session)
       return session;
