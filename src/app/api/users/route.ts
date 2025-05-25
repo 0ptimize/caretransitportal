@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 // import type { UserRole } from "@/types/next-auth" // no longer needed
 
@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     const prismaRole = roleRaw;
 
     // Check if user already exists
+    const prisma = getPrismaClient();
     const existingUser = await prisma.user.findUnique({
       where: { email }
     })

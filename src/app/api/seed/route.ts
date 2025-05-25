@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaClient } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function POST() {
   try {
+    const prisma = getPrismaClient();
     // Create admin user
     const hashedPassword = await bcrypt.hash('Admin@123', 10);
     const admin = await prisma.user.upsert({

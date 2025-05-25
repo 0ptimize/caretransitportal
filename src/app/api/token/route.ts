@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaClient } from '@/lib/prisma';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -14,6 +14,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const prisma = getPrismaClient();
 
     const user = await prisma.user.findUnique({
       where: { email },
