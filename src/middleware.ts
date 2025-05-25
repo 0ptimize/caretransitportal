@@ -19,6 +19,14 @@ export default withAuth(
       console.log("[DEBUG] Middleware - token role:", token.role)
     }
 
+    // Allow access to public routes
+    if (path === '/api/auth/token' || 
+        path === '/auth/signin' ||
+        path === '/auth/error') {
+      console.log("[DEBUG] Public route access granted:", path)
+      return NextResponse.next()
+    }
+
     // Admin routes
     if (path.startsWith("/admin")) {
       if (!token || token.role !== "ADMIN") {
@@ -29,13 +37,21 @@ export default withAuth(
     }
 
     // District routes
-    if (path.startsWith("/district") && (!token || token.role !== "DISTRICT_USER")) {
-      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/district`, req.url))
+    if (path.startsWith("/district")) {
+      if (!token || token.role !== "DISTRICT_USER") {
+        console.log("[DEBUG] District access denied - token:", token ? "exists" : "missing", "role:", token?.role)
+        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/district`, req.url))
+      }
+      console.log("[DEBUG] District access granted")
     }
 
     // Employee routes
-    if (path.startsWith("/employee") && (!token || token.role !== "EMPLOYEE_USER")) {
-      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/employee`, req.url))
+    if (path.startsWith("/employee")) {
+      if (!token || token.role !== "EMPLOYEE_USER") {
+        console.log("[DEBUG] Employee access denied - token:", token ? "exists" : "missing", "role:", token?.role)
+        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/employee`, req.url))
+      }
+      console.log("[DEBUG] Employee access granted")
     }
 
     return NextResponse.next()
