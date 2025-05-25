@@ -33,26 +33,16 @@ export default function SignInPage() {
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false,
-        callbackUrl
+        callbackUrl,
+        redirect: true
       })
-
-      console.log("Sign in result:", JSON.stringify(result, null, 2))
 
       if (result?.error) {
         console.error("Sign in error:", result.error)
         setError(result.error === "Invalid credentials" 
           ? "Invalid email or password" 
           : `Sign in error: ${result.error}`)
-        return
-      }
-
-      if (result?.ok) {
-        // Force a hard navigation to the callback URL with the base URL
-        window.location.href = `${baseUrl}${callbackUrl}`
-      } else {
-        console.error("Sign in failed without error")
-        setError("Sign in failed. Please try again.")
+        setIsLoading(false)
       }
     } catch (error) {
       console.error("Sign in exception:", error)
@@ -64,7 +54,6 @@ export default function SignInPage() {
         })
       }
       setError(error instanceof Error ? `Error: ${error.message}` : "An error occurred. Please try again.")
-    } finally {
       setIsLoading(false)
     }
   }
