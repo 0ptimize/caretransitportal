@@ -11,7 +11,10 @@ export default withAuth(
     const token = await getToken({ 
       req,
       secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === "production"
+      secureCookie: true,
+      cookieName: process.env.NODE_ENV === "production" 
+        ? "__Secure-next-auth.session-token" 
+        : "next-auth.session-token"
     })
     
     console.log("[DEBUG] Middleware - token:", token ? "exists" : "missing")
@@ -22,7 +25,8 @@ export default withAuth(
     // Allow access to public routes
     if (path === '/api/auth/token' || 
         path === '/auth/signin' ||
-        path === '/auth/error') {
+        path === '/auth/error' ||
+        path === '/api/auth/session') {
       console.log("[DEBUG] Public route access granted:", path)
       return NextResponse.next()
     }
@@ -31,7 +35,9 @@ export default withAuth(
     if (path.startsWith("/admin")) {
       if (!token || token.role !== "ADMIN") {
         console.log("[DEBUG] Admin access denied - token:", token ? "exists" : "missing", "role:", token?.role)
-        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/admin`, req.url))
+        const url = new URL(`/auth/signin?callbackUrl=/admin`, req.url)
+        url.searchParams.set("error", "AccessDenied")
+        return NextResponse.redirect(url)
       }
       console.log("[DEBUG] Admin access granted")
     }
@@ -40,7 +46,9 @@ export default withAuth(
     if (path.startsWith("/district")) {
       if (!token || token.role !== "DISTRICT_USER") {
         console.log("[DEBUG] District access denied - token:", token ? "exists" : "missing", "role:", token?.role)
-        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/district`, req.url))
+        const url = new URL(`/auth/signin?callbackUrl=/district`, req.url)
+        url.searchParams.set("error", "AccessDenied")
+        return NextResponse.redirect(url)
       }
       console.log("[DEBUG] District access granted")
     }
@@ -49,7 +57,9 @@ export default withAuth(
     if (path.startsWith("/employee")) {
       if (!token || token.role !== "EMPLOYEE_USER") {
         console.log("[DEBUG] Employee access denied - token:", token ? "exists" : "missing", "role:", token?.role)
-        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/employee`, req.url))
+        const url = new URL(`/auth/signin?callbackUrl=/employee`, req.url)
+        url.searchParams.set("error", "AccessDenied")
+        return NextResponse.redirect(url)
       }
       console.log("[DEBUG] Employee access granted")
     }
@@ -65,7 +75,8 @@ export default withAuth(
         // Allow access to public routes
         if (path === '/api/auth/token' || 
             path === '/auth/signin' ||
-            path === '/auth/error') {
+            path === '/auth/error' ||
+            path === '/api/auth/session') {
           return true
         }
 
@@ -97,6 +108,7 @@ export const config = {
     '/admin/:path*',
     '/district/:path*',
     '/employee/:path*',
-    '/api/auth/token'
+    '/api/auth/token',
+    '/api/auth/session'
   ]
 } 

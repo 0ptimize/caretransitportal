@@ -15,19 +15,32 @@ const baseUrl = isDevelopment
 export default function SignInPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession({
+    required: false,
+    onUnauthenticated() {
+      console.log("[DEBUG] User is not authenticated")
+    }
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { theme, setTheme } = useTheme()
 
   // Check if we already have a valid session
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      console.log("[DEBUG] Already authenticated, redirecting to:", searchParams.get("callbackUrl") || "/admin")
-      const callbackUrl = searchParams.get("callbackUrl") || "/admin"
-      window.location.href = callbackUrl
+    const checkSession = async () => {
+      if (status === "authenticated" && session?.user) {
+        console.log("[DEBUG] Already authenticated, redirecting to:", searchParams.get("callbackUrl") || "/admin")
+        const callbackUrl = searchParams.get("callbackUrl") || "/admin"
+        try {
+          await router.push(callbackUrl)
+        } catch (error) {
+          console.error("[DEBUG] Navigation error:", error)
+          window.location.href = callbackUrl
+        }
+      }
     }
-  }, [status, session, searchParams])
+    checkSession()
+  }, [status, session, searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -61,14 +74,24 @@ export default function SignInPage() {
         // Wait for session to be set
         const checkSession = async () => {
           try {
-            const response = await fetch("/api/auth/session")
+            const response = await fetch("/api/auth/session", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include"
+            })
             const sessionData = await response.json()
             console.log("[DEBUG] Session check response:", sessionData)
             
             if (sessionData?.user) {
               console.log("[DEBUG] Session confirmed, redirecting to:", callbackUrl)
-              // Force a hard navigation to ensure session is properly set
-              window.location.href = callbackUrl
+              try {
+                await router.push(callbackUrl)
+              } catch (error) {
+                console.error("[DEBUG] Navigation error:", error)
+                window.location.href = callbackUrl
+              }
             } else {
               console.log("[DEBUG] Session not set yet, retrying...")
               setTimeout(checkSession, 100)

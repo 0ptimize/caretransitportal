@@ -89,7 +89,8 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: !isDevelopment
+        secure: true,
+        domain: isDevelopment ? undefined : '.vercel.app'
       }
     },
     callbackUrl: {
@@ -98,7 +99,8 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: !isDevelopment
+        secure: true,
+        domain: isDevelopment ? undefined : '.vercel.app'
       }
     },
     csrfToken: {
@@ -107,7 +109,8 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: !isDevelopment
+        secure: true,
+        domain: isDevelopment ? undefined : '.vercel.app'
       }
     }
   },
@@ -127,11 +130,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       console.log("[DEBUG] Session callback - session (before):", session, "token:", token)
       if (token) {
-        session.user.id = token.id
-        session.user.email = token.email
-        session.user.name = token.name
-        session.user.role = token.role
-        session.user.schoolDistrict = token.schoolDistrict
+        session.user = {
+          ...session.user,
+          id: token.id,
+          email: token.email,
+          name: token.name,
+          role: token.role,
+          schoolDistrict: token.schoolDistrict
+        }
       }
       console.log("[DEBUG] Session callback - session (after):", session)
       return session
