@@ -111,18 +111,15 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log("[DEBUG] JWT callback - token:", token, "user:", user, "account:", account)
       if (user) {
-        token.id = user.id
-        token.email = user.email
-        token.name = user.email ? user.email.split('@')[0] : undefined
-        token.role = user.role
-        token.schoolDistrict = user.schoolDistrict
-      } else if (!token.name && token.email) {
-        token.name = token.email.split('@')[0]
-        console.log("[DEBUG] JWT fallback: set token.name from token.email", token.name)
+        token.name = user.name || (user.email ? user.email.split('@')[0] : '');
+        token.email = user.email;
+        token.role = user.role;
+        token.id = user.id;
+        token.schoolDistrict = user.schoolDistrict;
       }
-      return token
+      console.log('[DEBUG] JWT callback - token:', token, 'user:', user, 'account:', account);
+      return token;
     },
     async session({ session, token }) {
       console.log("[DEBUG] Session callback - session:", session, "token:", token)
