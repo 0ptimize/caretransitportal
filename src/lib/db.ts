@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { prisma } from './prisma'
+import { getPrismaClient } from './prisma'
 
 // Create a connection pool with increased capacity
 const pool = new Pool({
@@ -16,6 +16,8 @@ pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err)
   process.exit(-1)
 })
+
+const prisma = getPrismaClient()
 
 // Export the pool for direct database access if needed
 export { pool, prisma } 
