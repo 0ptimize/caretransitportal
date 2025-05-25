@@ -118,6 +118,9 @@ export const authOptions: NextAuthOptions = {
         token.name = user.email ? user.email.split('@')[0] : undefined
         token.role = user.role
         token.schoolDistrict = user.schoolDistrict
+      } else if (!token.name && token.email) {
+        token.name = token.email.split('@')[0]
+        console.log("[DEBUG] JWT fallback: set token.name from token.email", token.name)
       }
       return token
     },
