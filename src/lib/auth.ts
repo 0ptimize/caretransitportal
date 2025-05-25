@@ -116,7 +116,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       console.log('[DEBUG] JWT callback - token (before):', token, 'user:', user, 'account:', account);
       if (user) {
-        return {
+        const updatedToken = {
           ...token,
           id: user.id,
           email: user.email,
@@ -124,8 +124,10 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           schoolDistrict: user.schoolDistrict
         };
+        console.log('[DEBUG] JWT callback - updated token:', updatedToken);
+        return updatedToken;
       }
-      console.log('[DEBUG] JWT callback - token (after):', token);
+      console.log('[DEBUG] JWT callback - no user data, returning existing token:', token);
       return token;
     },
     async session({ session, token }) {
