@@ -57,12 +57,14 @@ export const authOptions: NextAuthOptions = {
           }
 
           console.log("[DEBUG] Authentication successful for user:", credentials.email)
-          return {
+          const userObj = {
             id: user.id,
             email: user.email,
             role: user.role as UserRole,
             schoolDistrict: user.schoolDistrict || ""
           }
+          console.log("[DEBUG] Returning user object from authorize:", userObj)
+          return userObj
         } catch (error) {
           console.error("[DEBUG] Authentication error:", error)
           if (error instanceof Error) {
@@ -111,6 +113,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
+      console.log('[DEBUG] JWT callback - token (before):', token, 'user:', user, 'account:', account);
       if (user) {
         token.name = user.email ? user.email.split('@')[0] : '';
         token.email = user.email;
@@ -118,11 +121,11 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.schoolDistrict = user.schoolDistrict;
       }
-      console.log('[DEBUG] JWT callback - token:', token, 'user:', user, 'account:', account);
+      console.log('[DEBUG] JWT callback - token (after):', token);
       return token;
     },
     async session({ session, token }) {
-      console.log("[DEBUG] Session callback - session:", session, "token:", token)
+      console.log("[DEBUG] Session callback - session (before):", session, "token:", token)
       if (token) {
         session.user.id = token.id
         session.user.email = token.email
@@ -130,6 +133,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role
         session.user.schoolDistrict = token.schoolDistrict
       }
+      console.log("[DEBUG] Session callback - session (after):", session)
       return session
     },
     async redirect({ url, baseUrl }) {
