@@ -34,7 +34,7 @@ export default function SignInPage() {
         email,
         password,
         callbackUrl,
-        redirect: true
+        redirect: false
       })
 
       if (result?.error) {
@@ -43,6 +43,11 @@ export default function SignInPage() {
           ? "Invalid email or password" 
           : `Sign in error: ${result.error}`)
         setIsLoading(false)
+        return
+      }
+
+      if (result?.ok) {
+        router.push(callbackUrl)
       }
     } catch (error) {
       console.error("Sign in exception:", error)
