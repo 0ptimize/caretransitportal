@@ -2,19 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { getPrismaClient } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-// import type { UserRole } from "@/types/next-auth" // no longer needed
-
-const roleMap = {
-  ADMIN: "ADMIN",
-  DISTRICT: "DISTRICT_USER",
-  EMPLOYEE: "EMPLOYEE_USER"
-} as const
-
-type PrismaUserRole = typeof roleMap[keyof typeof roleMap]
-
-function isValidRoleKey(key: string): key is keyof typeof roleMap {
-  return key in roleMap;
-}
+import type { UserRole } from "@/types/next-auth"
 
 export async function POST(request: Request) {
   try {
@@ -28,34 +16,38 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { email, password, firstName, lastName, username, role: roleRaw, schoolDistrict } = data as { email: string; password: string; firstName: string; lastName: string; username: string; role: string; schoolDistrict: string }
+    const { email, password, firstName, lastName, username, role, schoolDistrict } = data
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !username || !roleRaw || !schoolDistrict) {
+    if (!email || !password || !firstName || !lastName || !username || !role || !schoolDistrict) {
       return NextResponse.json(
         { message: "All fields are required" },
         { status: 400 }
       )
     }
 
-    // Validate role using type guard
-    if (!isValidRoleKey(roleRaw)) {
+    // Validate role
+    if (!["ADMIN", "DISTRICT_USER", "EMPLOYEE_USER"].includes(role)) {
       return NextResponse.json(
         { message: "Invalid role" },
         { status: 400 }
       )
     }
-    const prismaRole = roleRaw;
 
     // Check if user already exists
-    const prisma = getPrismaClient();
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
+    const prisma = getPrismaClient()
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { username }
+        ]
+      }
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "User with this email already exists" },
+        { message: existingUser.email === email ? "Email already in use" : "Username already in use" },
         { status: 400 }
       )
     }
@@ -71,7 +63,7 @@ export async function POST(request: Request) {
         firstName,
         lastName,
         username,
-        role: roleMap[prismaRole],
+        role: role as UserRole,
         schoolDistrict
       }
     })
