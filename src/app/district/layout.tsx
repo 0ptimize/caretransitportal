@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 import type { UserRole } from "@/types/next-auth"
 
@@ -12,14 +12,20 @@ export default function DistrictLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin")
-    } else if (status === "authenticated" && session?.user?.role !== "DISTRICT") {
+      const callbackUrl = encodeURIComponent(pathname)
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`)
+    } else if (status === "authenticated" && session?.user?.role !== "DISTRICT_USER") {
+      console.error("Unauthorized access attempt:", {
+        role: session?.user?.role,
+        path: pathname
+      })
       router.push("/")
     }
-  }, [session, status, router])
+  }, [session, status, router, pathname])
 
   if (status === "loading") {
     return (
@@ -29,7 +35,7 @@ export default function DistrictLayout({
     )
   }
 
-  if (status === "unauthenticated" || session?.user?.role !== "DISTRICT") {
+  if (status === "unauthenticated" || session?.user?.role !== "DISTRICT_USER") {
     return null
   }
 

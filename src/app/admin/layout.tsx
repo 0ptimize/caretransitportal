@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 import type { UserRole } from "@/types/next-auth"
 
@@ -12,14 +12,20 @@ export default function AdminLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin")
+      const callbackUrl = encodeURIComponent(pathname)
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`)
     } else if (status === "authenticated" && session?.user?.role !== "ADMIN") {
+      console.error("Unauthorized access attempt:", {
+        role: session?.user?.role,
+        path: pathname
+      })
       router.push("/")
     }
-  }, [session, status, router])
+  }, [session, status, router, pathname])
 
   if (status === "loading") {
     return (

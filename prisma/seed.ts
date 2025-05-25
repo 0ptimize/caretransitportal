@@ -1,32 +1,44 @@
-import { PrismaClient } from "@prisma/client"
+import { prisma } from '../src/lib/prisma'
 import bcrypt from "bcryptjs"
 
-const prisma = new PrismaClient()
-
 async function main() {
-  // Create admin user
-  const adminPassword = await bcrypt.hash("Admin@123", 10)
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@caretransit.com" },
-    update: {},
-    create: {
-      email: "admin@caretransit.com",
-      username: "admin",
-      firstName: "Admin",
-      lastName: "User",
-      password: adminPassword,
-      role: "ADMIN",
-    },
-  })
+  try {
+    // Create admin user
+    const adminPassword = await bcrypt.hash("Admin@123", 10)
+    
+    // First try to find the existing admin user
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: "admin@caretransit.com" }
+    })
 
-  console.log({ admin })
+    if (existingAdmin) {
+      console.log("Admin user already exists")
+      return
+    }
+
+    // If no admin exists, create one
+    const admin = await prisma.user.create({
+      data: {
+        email: "admin@caretransit.com",
+        username: "admin",
+        firstName: "Admin",
+        lastName: "User",
+        password: adminPassword,
+        role: "ADMIN",
+      },
+    })
+
+    console.log("Created admin user:", admin)
+  } catch (error) {
+    console.error("Error during seeding:", error)
+    throw error
+  } finally {
+    await prisma.$disconnect()
+  }
 }
 
 main()
   .catch((e) => {
     console.error(e)
     process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
   }) 

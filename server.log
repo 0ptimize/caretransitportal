@@ -1,0 +1,28 @@
+
+> caretransitportal@0.1.0 dev
+> next dev
+
+   ▲ Next.js 14.1.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local, .env
+
+2025-05-24T18:08:44.800Z next:router-server:filesystem nextDataRoutes Set(0) {}
+2025-05-24T18:08:44.801Z next:router-server:filesystem dynamicRoutes []
+2025-05-24T18:08:44.801Z next:router-server:filesystem pageFiles Set(0) {}
+2025-05-24T18:08:44.801Z next:router-server:filesystem appFiles Set(0) {}
+2025-05-24T18:08:45.659Z next:jsconfig-paths-plugin tsconfig.json or jsconfig.json paths: { '@/*': [ './src/*' ] }
+2025-05-24T18:08:45.659Z next:jsconfig-paths-plugin resolved baseUrl: {
+  baseUrl: '/Users/jrf/Documents/cursor/caretransitportal',
+  isImplicit: true
+}
+2025-05-24T18:08:45.662Z next:jsconfig-paths-plugin tsconfig.json or jsconfig.json paths: { '@/*': [ './src/*' ] }
+2025-05-24T18:08:45.662Z next:jsconfig-paths-plugin resolved baseUrl: {
+  baseUrl: '/Users/jrf/Documents/cursor/caretransitportal',
+  isImplicit: true
+}
+2025-05-24T18:08:45.668Z next:jsconfig-paths-plugin tsconfig.json or jsconfig.json paths: { '@/*': [ './src/*' ] }
+2025-05-24T18:08:45.668Z next:jsconfig-paths-plugin resolved baseUrl: {
+  baseUrl: '/Users/jrf/Documents/cursor/caretransitportal',
+  isImplicit: true
+}
+ ✓ Ready in 1534ms
