@@ -126,19 +126,11 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      const prodBase = "https://caretransitportal.vercel.app";
-      try {
-        const parsed = new URL(url, prodBase);
-        if (parsed.origin !== prodBase) {
-          // Force all redirects to the production domain
-          return prodBase;
-        }
-        // Allow only URLs on the production domain
-        return parsed.href;
-      } catch {
-        // Fallback to prod
-        return prodBase;
+      console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl);
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
       }
+      return url.startsWith(baseUrl) ? url : baseUrl;
     }
   },
   pages: {
