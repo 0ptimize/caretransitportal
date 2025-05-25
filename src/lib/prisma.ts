@@ -20,7 +20,11 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
       connectionLimit: 100, // Support hundreds of concurrent users
       poolTimeout: 30, // 30 second timeout
       // Disable connection pooling in development
-      ...(process.env.NODE_ENV === 'development' ? { pool: false } : {})
+      ...(process.env.NODE_ENV === 'development' ? { pool: false } : {}),
+      // Additional settings to prevent prepared statement issues
+      preparedStatements: false,
+      statementCache: false,
+      queryCache: false
     }
   }
 })
