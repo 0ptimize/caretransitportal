@@ -7,9 +7,15 @@ export default withAuth(
     const path = req.nextUrl.pathname
     const callbackUrl = encodeURIComponent(path)
 
+    console.log("[DEBUG] Middleware - path:", path, "token:", token)
+
     // Admin routes
-    if (path.startsWith("/admin") && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
+    if (path.startsWith("/admin")) {
+      console.log("[DEBUG] Admin route check - token role:", token?.role)
+      if (token?.role !== "ADMIN") {
+        console.log("[DEBUG] Redirecting to sign-in - invalid role:", token?.role)
+        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
+      }
     }
 
     // District routes
@@ -22,17 +28,21 @@ export default withAuth(
       return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
     }
 
+    console.log("[DEBUG] Middleware - allowing access to:", path)
     return NextResponse.next()
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
+        console.log("[DEBUG] Authorized callback - path:", req.nextUrl.pathname, "token:", token)
         // Allow access to token endpoint and public routes
         if (req.nextUrl.pathname === '/api/auth/token' || 
             req.nextUrl.pathname === '/auth/signin' ||
             req.nextUrl.pathname === '/auth/error') {
+          console.log("[DEBUG] Allowing access to public route:", req.nextUrl.pathname)
           return true;
         }
+        console.log("[DEBUG] Checking token for protected route:", req.nextUrl.pathname)
         return !!token;
       }
     },
