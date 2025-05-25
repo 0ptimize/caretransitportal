@@ -48,7 +48,8 @@ export default function SignInPage() {
       }
 
       if (result?.ok) {
-        router.replace(callbackUrl)
+        // Force a hard navigation to the callback URL with the base URL
+        window.location.href = `${baseUrl}${callbackUrl}`
       } else {
         console.error("Sign in failed without error")
         setError("Sign in failed. Please try again.")

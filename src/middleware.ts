@@ -27,8 +27,10 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow access to token endpoint
-        if (req.nextUrl.pathname === '/api/auth/token') {
+        // Allow access to token endpoint and public routes
+        if (req.nextUrl.pathname === '/api/auth/token' || 
+            req.nextUrl.pathname === '/auth/signin' ||
+            req.nextUrl.pathname === '/auth/error') {
           return true;
         }
         return !!token;
@@ -40,13 +42,12 @@ export default withAuth(
   }
 )
 
+// Configure which routes to protect
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/district/:path*",
-    "/employee/:path*",
-    "/api/admin/:path*",
-    "/api/district/:path*",
-    "/api/employee/:path*"
+    '/admin/:path*',
+    '/district/:path*',
+    '/employee/:path*',
+    '/api/auth/token'
   ]
 } 
