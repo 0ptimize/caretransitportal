@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -44,15 +44,15 @@ const createPrismaClient = () => {
   const client = prismaClientSingleton()
   
   // Add connection error handling
-  client.$on('query', (e) => {
-    console.log('Query:', e.query)
-    console.log('Params:', e.params)
-    console.log('Duration:', e.duration, 'ms')
-  })
-
-  client.$on('error', (e) => {
-    console.error('Prisma Error:', e)
-  })
+  if (process.env.NODE_ENV === 'development') {
+    client.$use(async (params, next) => {
+      const before = Date.now()
+      const result = await next(params)
+      const after = Date.now()
+      console.log(`Query ${params.model}.${params.action} took ${after - before}ms`)
+      return result
+    })
+  }
 
   return client
 }
