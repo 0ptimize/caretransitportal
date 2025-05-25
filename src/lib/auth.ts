@@ -146,6 +146,13 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl)
+      
+      // If we're being redirected to the signin page after a successful login
+      if (url.includes("/api/auth/signin")) {
+        console.log("[DEBUG] Redirecting to admin page after successful login")
+        return `${baseUrl}/admin`
+      }
+      
       // If the URL is a sign-in URL with a callbackUrl parameter, use that
       if (url.startsWith("/api/auth/signin")) {
         const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl")
@@ -157,10 +164,12 @@ export const authOptions: NextAuthOptions = {
         console.log("[DEBUG] No callbackUrl found, redirecting to /admin")
         return `${baseUrl}/admin`
       }
+      
       // Handle relative URLs
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
       }
+      
       // Always use the public site URL
       return baseUrl
     }
