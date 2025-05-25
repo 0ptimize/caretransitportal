@@ -24,9 +24,10 @@ export default function SignInPage() {
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       console.log("[DEBUG] Already authenticated, redirecting to:", searchParams.get("callbackUrl") || "/admin")
-      router.push(searchParams.get("callbackUrl") || "/admin")
+      const callbackUrl = searchParams.get("callbackUrl") || "/admin"
+      window.location.href = callbackUrl
     }
-  }, [status, session, router, searchParams])
+  }, [status, session, searchParams])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

@@ -4,87 +4,74 @@ import { getToken } from "next-auth/jwt"
 
 export default withAuth(
   async function middleware(req) {
-    // Log at the very top to confirm execution
     const path = req.nextUrl.pathname
-    const allCookies = req.cookies.getAll()
     console.log("[DEBUG] Middleware ENTRY - path:", path)
-    console.log("[DEBUG] Middleware ENTRY - cookies:", allCookies)
     
-    // Get the token using getToken to ensure proper JWT handling
+    // Get the token using getToken
     const token = await getToken({ 
       req,
       secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === "production",
-      cookieName: process.env.NODE_ENV === "production" 
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token"
+      secureCookie: process.env.NODE_ENV === "production"
     })
     
-    if (!token) {
-      console.warn("[DEBUG] Middleware - token is null! All cookies:", allCookies)
-    } else {
-      console.log("[DEBUG] Middleware - token:", JSON.stringify(token))
+    console.log("[DEBUG] Middleware - token:", token ? "exists" : "missing")
+    if (token) {
+      console.log("[DEBUG] Middleware - token role:", token.role)
     }
-
-    const callbackUrl = encodeURIComponent(path)
 
     // Admin routes
     if (path.startsWith("/admin")) {
-      console.log("[DEBUG] Admin route check - token role:", token?.role)
       if (!token || token.role !== "ADMIN") {
-        console.log("[DEBUG] Redirecting to sign-in - invalid role:", token?.role)
-        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
+        console.log("[DEBUG] Admin access denied - token:", token ? "exists" : "missing", "role:", token?.role)
+        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/admin`, req.url))
       }
+      console.log("[DEBUG] Admin access granted")
     }
 
     // District routes
     if (path.startsWith("/district") && (!token || token.role !== "DISTRICT_USER")) {
-      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
+      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/district`, req.url))
     }
 
     // Employee routes
     if (path.startsWith("/employee") && (!token || token.role !== "EMPLOYEE_USER")) {
-      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${callbackUrl}`, req.url))
+      return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=/employee`, req.url))
     }
 
-    console.log("[DEBUG] Middleware - allowing access to:", path)
     return NextResponse.next()
   },
   {
     callbacks: {
-      authorized: async ({ token, req }) => {
-        // Log the full request details for debugging
-        console.log("[DEBUG] Authorized callback - path:", req.nextUrl.pathname)
-        console.log("[DEBUG] Authorized callback - token:", JSON.stringify(token))
-        console.log("[DEBUG] Authorized callback - cookies:", req.cookies.getAll())
-
-        // Allow access to token endpoint and public routes
-        if (req.nextUrl.pathname === '/api/auth/token' || 
-            req.nextUrl.pathname === '/auth/signin' ||
-            req.nextUrl.pathname === '/auth/error') {
-          console.log("[DEBUG] Allowing access to public route:", req.nextUrl.pathname)
+      authorized: ({ token, req }) => {
+        const path = req.nextUrl.pathname
+        console.log("[DEBUG] Authorized callback - path:", path, "token:", token ? "exists" : "missing")
+        
+        // Allow access to public routes
+        if (path === '/api/auth/token' || 
+            path === '/auth/signin' ||
+            path === '/auth/error') {
           return true
         }
 
         // For protected routes, ensure token exists and has required role
-        if (req.nextUrl.pathname.startsWith('/admin')) {
-          return token?.role === "ADMIN"
+        if (path.startsWith('/admin')) {
+          const isAuthorized = token?.role === "ADMIN"
+          console.log("[DEBUG] Admin route authorization:", isAuthorized)
+          return isAuthorized
         }
-        if (req.nextUrl.pathname.startsWith('/district')) {
+        if (path.startsWith('/district')) {
           return token?.role === "DISTRICT_USER"
         }
-        if (req.nextUrl.pathname.startsWith('/employee')) {
+        if (path.startsWith('/employee')) {
           return token?.role === "EMPLOYEE_USER"
         }
 
-        console.log("[DEBUG] Checking token for protected route:", req.nextUrl.pathname)
         return !!token
       }
     },
     pages: {
       signIn: "/auth/signin"
-    },
-    secret: process.env.NEXTAUTH_SECRET
+    }
   }
 )
 
