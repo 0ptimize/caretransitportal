@@ -19,15 +19,16 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("[DEBUG] authorize() called with credentials:", credentials)
         if (!credentials?.email || !credentials?.password) {
-          console.error("Missing credentials")
+          console.error("[DEBUG] Missing credentials", credentials)
           throw new Error("Email and password are required")
         }
 
         const prisma = getPrismaClient()
 
         try {
-          console.log("Attempting to find user:", credentials.email)
+          console.log("[DEBUG] Attempting to find user:", credentials.email)
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
             select: {
@@ -40,22 +41,22 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!user || !user.password) {
-            console.error("User not found or no password:", credentials.email)
+            console.error("[DEBUG] User not found or no password:", credentials.email)
             throw new Error("Invalid credentials")
           }
 
-          console.log("User found, comparing password")
+          console.log("[DEBUG] User found, comparing password for:", credentials.email)
           const isPasswordValid = await bcryptjs.compare(
             credentials.password,
             user.password
           )
 
           if (!isPasswordValid) {
-            console.error("Invalid password for user:", credentials.email)
+            console.error("[DEBUG] Invalid password for user:", credentials.email)
             throw new Error("Invalid credentials")
           }
 
-          console.log("Authentication successful for user:", credentials.email)
+          console.log("[DEBUG] Authentication successful for user:", credentials.email)
           return {
             id: user.id,
             email: user.email,
@@ -63,7 +64,7 @@ export const authOptions: NextAuthOptions = {
             schoolDistrict: user.schoolDistrict || ""
           }
         } catch (error) {
-          console.error("Authentication error:", error)
+          console.error("[DEBUG] Authentication error:", error)
           if (error instanceof Error) {
             throw error
           }
@@ -128,9 +129,10 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      console.log("Redirect callback - url:", url, "baseUrl:", baseUrl)
+      console.log("[DEBUG] Redirect callback - url:", url, "baseUrl:", baseUrl)
       // Always redirect to /admin after successful login
       if (url.startsWith("/api/auth/signin")) {
+        console.log("[DEBUG] Redirecting to /admin after login")
         return `${baseUrl}/admin`
       }
       if (url.startsWith("/")) {
