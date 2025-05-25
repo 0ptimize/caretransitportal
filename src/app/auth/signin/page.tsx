@@ -34,17 +34,18 @@ export default function SignInPage() {
         email,
         password,
         callbackUrl,
-        redirect: true
+        redirect: false
       })
 
-      // Note: With redirect: true, this code won't execute
-      // as the page will redirect before reaching here
       if (result?.error) {
         console.error("Sign in error:", result.error)
         setError(result.error === "Invalid credentials" 
           ? "Invalid email or password" 
           : `Sign in error: ${result.error}`)
         setIsLoading(false)
+      } else if (result?.ok) {
+        console.log("[DEBUG] Sign in successful, redirecting to:", callbackUrl)
+        router.push(callbackUrl)
       }
     } catch (error) {
       console.error("Sign in exception:", error)
