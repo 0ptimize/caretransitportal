@@ -19,7 +19,7 @@ interface CustomUser {
   schoolDistrict: string
 }
 
-export const config: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     Credentials({
       name: "Credentials",
@@ -148,6 +148,6 @@ export const config: NextAuthOptions = {
   debug: true
 }
 
-const handler = NextAuth(config)
+const handler = NextAuth(authOptions)
 export const { auth, signIn, signOut } = handler
 export { handler as GET, handler as POST } 
